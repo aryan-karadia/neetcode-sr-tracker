@@ -1,48 +1,309 @@
-import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { SETS } from './data';
+import Fireworks from './components/Fireworks';
+import Header from './components/Header';
+import Hero from './components/Hero';
+import InfoCard from './components/InfoCard';
+import NextProblemCard from './components/NextProblemCard';
+import ProblemList from './components/ProblemList';
+import Stats from './components/Stats';
 
-const STORAGE_KEY="neetcode_sr_v2";
-const loadState=(key)=>{const saved=localStorage.getItem(key);if(!saved)return {};try{return JSON.parse(saved)||{};}catch(error){console.error("Unable to read saved progress. Starting with an empty queue.",error);return {};}};
-const today=()=>new Date().setHours(0,0,0,0);const daysFromNow=n=>today()+n*86400000;const formatDate=ts=>new Date(ts).toLocaleDateString(undefined,{month:"short",day:"numeric"});const solutionUrl=problem=>`https://neetcode.io/solutions/${problem[4]||problem[3]}`;
-const progressKey=problem=>problem[3];
-const normalizeDueDates=progress=>{const currentDay=today();const dueDates=Object.values(progress).map(record=>record?.due).filter(due=>typeof due==="number"&&Number.isFinite(due));const oldestDue=Math.min(...dueDates);if(!dueDates.length||oldestDue>=currentDay)return progress;const offset=currentDay-oldestDue;return Object.fromEntries(Object.entries(progress).map(([key,record])=>[key,record?.due==null?record:{...record,due:record.due+offset}]));};
-const loadSharedProgress=()=>{const sharedKey=STORAGE_KEY+"_progress";const saved=localStorage.getItem(sharedKey);if(saved){const progress=loadState(sharedKey);const normalized=normalizeDueDates(progress);if(normalized!==progress)try{localStorage.setItem(sharedKey,JSON.stringify(normalized));}catch(error){console.error("Unable to save normalized review dates to browser storage.",error);}return normalized;}const migrated={};Object.values(SETS).forEach(set=>{const legacy=loadState(STORAGE_KEY+"_"+Object.entries(SETS).find(([,value])=>value===set)?.[0]);set.problems.forEach((problem,index)=>{if(legacy[index]&&!migrated[progressKey(problem)])migrated[progressKey(problem)]=legacy[index];});});return normalizeDueDates(migrated);};
-function Badge({children,tone=""}){return <span className={`badge ${tone}`}>{children}</span>}
-function Button({children,className="",...props}){return <button className={`btn ${className}`} {...props}>{children}</button>}
-const FIREWORK_PARTICLES=Array.from({length:8},(_,index)=>({angle:index*45,distance:20+(index%2)*5}));
-function Fireworks({burst}){
- if(!burst)return null;
- return <div className="fireworks" style={{left:burst.x,top:burst.y}} aria-hidden="true">{FIREWORK_PARTICLES.map(({angle,distance})=><span key={angle} className="firework-spark" style={{"--angle":`${angle}deg`,"--distance":`${distance}px`}}/> )}</div>;
-}
-function App(){
- const [activeSet,setActiveSet]=useState(()=>localStorage.getItem(STORAGE_KEY+"_set")||"neetcode150");
- const [state,setState]=useState(loadSharedProgress);
- const [filter,setFilter]=useState("all");
- const [focusedIdx,setFocusedIdx]=useState(null);
- const [feedback,setFeedback]=useState("");
- const [completedIdx,setCompletedIdx]=useState(null);
- const [burst,setBurst]=useState(null);
- const pointerPosition=useRef({x:0,y:0});
- const feedbackTimer=useRef(null);
- const set=SETS[activeSet]; const problems=set.problems;
- const notify=(message)=>{setFeedback(message);setBurst({id:Date.now(),...pointerPosition.current});if(feedbackTimer.current)clearTimeout(feedbackTimer.current);feedbackTimer.current=setTimeout(()=>setFeedback(""),5000);};
- useEffect(()=>{const handlePointerMove=event=>{pointerPosition.current={x:event.clientX,y:event.clientY};};window.addEventListener("pointermove",handlePointerMove);return()=>window.removeEventListener("pointermove",handlePointerMove);},[]);
- useEffect(()=>{if(!burst)return;const timer=setTimeout(()=>setBurst(null),700);return()=>clearTimeout(timer);},[burst]);
- useEffect(()=>()=>{if(feedbackTimer.current)clearTimeout(feedbackTimer.current);},[]);
- const save=(next)=>{setState(next);try{localStorage.setItem(STORAGE_KEY+"_progress",JSON.stringify(next));}catch(error){console.error("Unable to save progress to browser storage.",error);}};
- const changeSet=(key)=>{if(!SETS[key])return;localStorage.setItem(STORAGE_KEY+"_set",key);setActiveSet(key);setFilter("all");setFocusedIdx(null);setCompletedIdx(null);setFeedback("");};
- const resetProgress=()=>{if(!window.confirm("Reset all practice progress?"))return;if(!window.confirm("This permanently clears every completed problem and review date across all practice sets. Continue?"))return;localStorage.removeItem(STORAGE_KEY+"_progress");Object.keys(SETS).forEach(key=>localStorage.removeItem(STORAGE_KEY+"_"+key));setState({});setFocusedIdx(null);setCompletedIdx(null);notify("Progress reset");};
- const getRecord=(problem)=>state[progressKey(problem)]||{status:"new",ef:2.3,interval:0,reps:0,due:null,last:null};
- const grade=(problem,g)=>{const key=progressKey(problem);const r={...getRecord(problem),last:today()};if(g===0){r.reps=0;r.interval=1;r.ef=Math.max(1.3,r.ef-.2);}else{r.reps=(r.reps||0)+1;if(g===1)r.ef=Math.max(1.3,r.ef-.15);if(g===3)r.ef+=.15;if(r.reps===1)r.interval=1;else if(r.reps===2)r.interval=3;else r.interval=Math.round(r.interval*r.ef*(g===1?.75:1));}r.due=daysFromNow(r.interval);r.status=r.interval>=21?"mastered":"review";save({...state,[key]:r});};
- const markStarted=(problem)=>{const key=progressKey(problem);const r=getRecord(problem);if(r.status!=="new")return;r.status="review";r.reps=0;r.ef=2.3;r.interval=1;r.due=daysFromNow(1);r.last=today();save({...state,[key]:r});setFocusedIdx(problems.indexOf(problem));setCompletedIdx(problems.indexOf(problem));notify("Marked as completed");};
- const uncomplete=(problem)=>{const key=progressKey(problem);if(!state[key])return;const next={...state};delete next[key];save(next);if(focusedIdx===problems.indexOf(problem)){setFocusedIdx(null);setCompletedIdx(null);}notify("Marked as not completed");};
- const queueNext=useMemo(()=>{const due=[];problems.forEach((p,i)=>{const r=state[progressKey(p)];if(r&&r.due!==null&&r.due<=today())due.push([i,r.due]);});if(due.length){due.sort((a,b)=>a[1]-b[1]);return {idx:due[0][0],type:"due"};}const idx=problems.findIndex(p=>!state[progressKey(p)]);return idx===-1?null:{idx,type:"new"};},[problems,state]);
- const current=focusedIdx===null||!problems[focusedIdx]?queueNext:{idx:focusedIdx,type:state[focusedIdx]?"due":"new"};
- const next=current;
- const moveNext=()=>{const start=current?current.idx+1:0;const remaining=problems.findIndex((p,i)=>i>=start&&!state[progressKey(p)]);const due=problems.map((p,i)=>({i,r:state[progressKey(p)]})).find(({i,r})=>i>=start&&r?.due!=null&&r.due<=today());const idx=remaining===-1?(due?.i??problems.findIndex(p=>!state[progressKey(p)])):remaining;if(idx===-1){setFocusedIdx(null);setCompletedIdx(null);notify("All problems completed");return;}setFocusedIdx(idx);setCompletedIdx(null);notify("Moved to next problem");};
- const categories=useMemo(()=>[...new Set(problems.map(p=>p[1]))],[problems]);
- const doneCount=problems.filter(p=>state[progressKey(p)]).length;const dueCount=problems.filter(p=>state[progressKey(p)]?.due!==null&&state[progressKey(p)]?.due<=today()).length;const masteredCount=problems.filter(p=>state[progressKey(p)]?.status==="mastered").length;const progress=problems.length?Math.round(doneCount/problems.length*100):0;
- return <div className="app-shell"><header className="header"><div className="container header-inner"><div className="brand"><div className="logo">N</div><div><div className="brand-name">Pattern Recall</div><div className="brand-sub">Spaced repetition for coding interviews</div></div></div><div className="private-note"><span className="status-dot"/> Stored locally · private by default <button className="reset-button" onClick={resetProgress}>Reset progress</button></div></div></header><main className="container main"><section className="hero"><div><p className="eyebrow">Your practice queue</p><h1>Build recall that holds under pressure.</h1><p className="hero-copy">Work through the roadmap in order, then revisit the patterns that need more reps. One focused recommendation at a time.</p></div><div className="select-group"><label className="label" htmlFor="practice-set">Practice set</label><select id="practice-set" className="select" value={activeSet} onChange={e=>changeSet(e.target.value)}>{Object.entries(SETS).map(([key,value])=><option key={key} value={key}>{value.label}</option>)}</select></div></section><section className="stats"><div className="card stat"><span className="stat-value">{doneCount}<small>/{problems.length}</small></span><span className="stat-label">Attempted</span><div className="progress"><div className="progress-bar" style={{width:`${progress}%`}}/></div></div><div className="card stat"><span className="stat-value">{dueCount}</span><span className="stat-label">Due today</span></div><div className="card stat"><span className="stat-value">{masteredCount}</span><span className="stat-label">Mastered</span></div><div className="card stat"><span className="stat-value">{Math.max(problems.length-doneCount,0)}</span><span className="stat-label">Remaining</span></div></section><section className="card next-card">{next?<><p className="next-heading">Next up · {next.type==="due"?"Review":"New problem"}</p><div className="badges"><Badge tone={next.type==="due"?"due":"primary"}>{next.type==="due"?"Review":"New"}</Badge><Badge>{problems[next.idx][1]}</Badge><Badge>{problems[next.idx][2]}</Badge></div><h2 className="next-title">{problems[next.idx][0]}</h2><p className="next-meta">{next.type==="due"?"How did it go this time?":"Start a focused attempt, then schedule your first review."}</p><div className="actions"><a className="btn btn-primary" target="_blank" rel="noreferrer" href={`https://leetcode.com/problems/${problems[next.idx][3]}/`}>Open on LeetCode ↗</a>{next.type==="new"&&<Fragment><a className="btn btn-secondary" target="_blank" rel="noreferrer" href={solutionUrl(problems[next.idx])}>View solution ↗</a><Button className="btn-success" onClick={()=>completedIdx===next.idx?moveNext():markStarted(problems[next.idx])}>{completedIdx===next.idx?"Move to next problem →":"Mark completed"}</Button></Fragment>}</div>{next.type==="due"&&<Fragment><div className="grade"><Button className="grade-again" onClick={()=>grade(problems[next.idx],0)}>Blanked</Button><Button className="grade-hard" onClick={()=>grade(problems[next.idx],1)}>Hard</Button><Button className="grade-good" onClick={()=>grade(problems[next.idx],2)}>Good</Button><Button className="grade-easy" onClick={()=>{grade(problems[next.idx],3);notify("Marked as completed");}}>Easy</Button></div><Button className="btn-success" onClick={moveNext}>Move to next problem →</Button></Fragment>}</>:<><p className="next-heading">All caught up</p><h2 className="next-title">Your queue is clear.</h2><p className="next-meta">No new problems left and nothing due for review.</p></>}</section><div className="toolbar"><h2>Roadmap problems</h2><div className="filters">{["all",...categories].map(category=><button key={category} className={`filter ${filter===category?"active":""}`} onClick={()=>setFilter(category)}>{category==="all"?"All":category}</button>)}</div></div><section className="card list-card">{categories.filter(c=>filter==="all"||filter===c).map(category=>{const items=problems.map((p,i)=>({p,i})).filter(({p})=>p[1]===category);const finished=items.filter(({p})=>state[progressKey(p)]).length;return <div className="accordion" key={category}><button className="accordion-trigger" onClick={e=>{const content=e.currentTarget.nextElementSibling;content.hidden=!content.hidden}}>{category}<span>{finished}/{items.length} · ＋</span></button><div>{items.map(({p,i})=>{const r=state[progressKey(p)];let status="Not started",tone="new";if(r?.status==="mastered"){tone="mastered";status=`Mastered · next review ${formatDate(r.due)}`;}else if(r?.due<=today()){tone="due";status="Due for review";}else if(r){tone="review";status=`Reviewing · next ${formatDate(r.due)}`;}return <div className="problem" key={`${p[3]}-${i}`}><div className="problem-name"><span className={`dot ${tone}`}/><span>{p[0]}</span><span>{p[2]} · {status}</span> </div><div className="problem-actions"><a className="problem-link" target="_blank" rel="noreferrer" href={`https://leetcode.com/problems/${p[3]}/`}>Solve ↗</a> {r&&<Fragment><a className="solution-link" target="_blank" rel="noreferrer" href={solutionUrl(p)}>Solution ↗</a><button type="button" className="solution-link" style={{padding:0,border:0,background:"none",cursor:"pointer",font:"inherit"}} onClick={()=>uncomplete(p)}>Uncomplete</button></Fragment>}</div></div>})}</div></div>})}</section><section className="card info"><strong>How review timing works</strong>: each completed problem enters a simplified SM-2 review queue. Your first review is tomorrow, then after three days, with longer intervals for strong recall. A failed review resets the interval to 1 day. Progress stays in this browser and never leaves your device. </section></main><Fireworks burst={burst}/>{feedback&&<div className="toast" role="status">{feedback} ✓</div>}<footer className="footer">Pattern Recall · Links open directly on LeetCode</footer></div>;
+const STORAGE_KEY = 'neetcode_sr_v2';
+const today = () => new Date().setHours(0, 0, 0, 0);
+const daysFromNow = (days) => today() + days * 86400000;
+const formatDate = (timestamp) =>
+  new Date(timestamp).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+const problemUrl = (problem) =>
+  `https://neetcode.io/problems/${problem[4] || problem[3]}?list=neetcode150`;
+const progressKey = (problem) => problem[3];
+
+const loadState = (key) => {
+  const saved = localStorage.getItem(key);
+  if (!saved) return {};
+  try {
+    return JSON.parse(saved) || {};
+  } catch (error) {
+    console.error('Unable to read saved progress. Starting with an empty queue.', error);
+    return {};
+  }
+};
+
+const normalizeDueDates = (progress) => {
+  const currentDay = today();
+  const dueDates = Object.values(progress)
+    .map((record) => record?.due)
+    .filter((due) => typeof due === 'number' && Number.isFinite(due));
+  const oldestDue = Math.min(...dueDates);
+  if (!dueDates.length || oldestDue >= currentDay) return progress;
+  const offset = currentDay - oldestDue;
+  return Object.fromEntries(
+    Object.entries(progress).map(([key, record]) => [
+      key,
+      record?.due == null ? record : { ...record, due: record.due + offset },
+    ]),
+  );
+};
+
+const loadSharedProgress = () => {
+  const sharedKey = `${STORAGE_KEY}_progress`;
+  const saved = localStorage.getItem(sharedKey);
+  if (saved) {
+    const progress = loadState(sharedKey);
+    const normalized = normalizeDueDates(progress);
+    if (normalized !== progress) {
+      try {
+        localStorage.setItem(sharedKey, JSON.stringify(normalized));
+      } catch (error) {
+        console.error('Unable to save normalized review dates to browser storage.', error);
+      }
+    }
+    return normalized;
+  }
+
+  const migrated = {};
+  Object.values(SETS).forEach((set) => {
+    const setKey = Object.entries(SETS).find(([, value]) => value === set)?.[0];
+    const legacy = loadState(`${STORAGE_KEY}_${setKey}`);
+    set.problems.forEach((problem, index) => {
+      if (legacy[index] && !migrated[progressKey(problem)]) {
+        migrated[progressKey(problem)] = legacy[index];
+      }
+    });
+  });
+  return normalizeDueDates(migrated);
+};
+
+function App() {
+  const [activeSet, setActiveSet] = useState(
+    () => localStorage.getItem(`${STORAGE_KEY}_set`) || 'neetcode150',
+  );
+  const [state, setState] = useState(loadSharedProgress);
+  const [filter, setFilter] = useState('all');
+  const [focusedIdx, setFocusedIdx] = useState(null);
+  const [feedback, setFeedback] = useState('');
+  const [completedIdx, setCompletedIdx] = useState(null);
+  const [burst, setBurst] = useState(null);
+  const pointerPosition = useRef({ x: 0, y: 0 });
+  const feedbackTimer = useRef(null);
+  const set = SETS[activeSet];
+  const problems = set.problems;
+
+  const notify = (message) => {
+    setFeedback(message);
+    setBurst({ id: Date.now(), ...pointerPosition.current });
+    if (feedbackTimer.current) clearTimeout(feedbackTimer.current);
+    feedbackTimer.current = setTimeout(() => setFeedback(''), 5000);
+  };
+
+  useEffect(() => {
+    const handlePointerMove = (event) => {
+      pointerPosition.current = { x: event.clientX, y: event.clientY };
+    };
+    window.addEventListener('pointermove', handlePointerMove);
+    return () => window.removeEventListener('pointermove', handlePointerMove);
+  }, []);
+
+  useEffect(() => {
+    if (!burst) return undefined;
+    const timer = setTimeout(() => setBurst(null), 700);
+    return () => clearTimeout(timer);
+  }, [burst]);
+
+  useEffect(() => () => {
+    if (feedbackTimer.current) clearTimeout(feedbackTimer.current);
+  }, []);
+
+  const save = (next) => {
+    setState(next);
+    try {
+      localStorage.setItem(`${STORAGE_KEY}_progress`, JSON.stringify(next));
+    } catch (error) {
+      console.error('Unable to save progress to browser storage.', error);
+    }
+  };
+
+  const changeSet = (key) => {
+    if (!SETS[key]) return;
+    localStorage.setItem(`${STORAGE_KEY}_set`, key);
+    setActiveSet(key);
+    setFilter('all');
+    setFocusedIdx(null);
+    setCompletedIdx(null);
+    setFeedback('');
+  };
+
+  const resetProgress = () => {
+    if (!window.confirm('Reset all practice progress?')) return;
+    if (
+      !window.confirm(
+        'This permanently clears every completed problem and review date across all practice sets. Continue?',
+      )
+    )
+      return;
+    localStorage.removeItem(`${STORAGE_KEY}_progress`);
+    Object.keys(SETS).forEach((key) => localStorage.removeItem(`${STORAGE_KEY}_${key}`));
+    setState({});
+    setFocusedIdx(null);
+    setCompletedIdx(null);
+    notify('Progress reset');
+  };
+
+  const getRecord = (problem) =>
+    state[progressKey(problem)] || {
+      status: 'new',
+      ef: 2.3,
+      interval: 0,
+      reps: 0,
+      due: null,
+      last: null,
+    };
+
+  const grade = (problem, gradeValue) => {
+    const key = progressKey(problem);
+    const record = { ...getRecord(problem), last: today() };
+    if (gradeValue === 0) {
+      record.reps = 0;
+      record.interval = 1;
+      record.ef = Math.max(1.3, record.ef - 0.2);
+    } else {
+      record.reps = (record.reps || 0) + 1;
+      if (gradeValue === 1) record.ef = Math.max(1.3, record.ef - 0.15);
+      if (gradeValue === 3) record.ef += 0.15;
+      if (record.reps === 1) record.interval = 1;
+      else if (record.reps === 2) record.interval = 3;
+      else record.interval = Math.round(record.interval * record.ef * (gradeValue === 1 ? 0.75 : 1));
+    }
+    record.due = daysFromNow(record.interval);
+    record.status = record.interval >= 21 ? 'mastered' : 'review';
+    save({ ...state, [key]: record });
+  };
+
+  const markStarted = (problem) => {
+    const key = progressKey(problem);
+    const record = getRecord(problem);
+    if (record.status !== 'new') return;
+    record.status = 'review';
+    record.reps = 0;
+    record.ef = 2.3;
+    record.interval = 1;
+    record.due = daysFromNow(1);
+    record.last = today();
+    save({ ...state, [key]: record });
+    setFocusedIdx(problems.indexOf(problem));
+    setCompletedIdx(problems.indexOf(problem));
+    notify('Marked as completed');
+  };
+
+  const uncomplete = (problem) => {
+    const key = progressKey(problem);
+    if (!state[key]) return;
+    const next = { ...state };
+    delete next[key];
+    save(next);
+    if (focusedIdx === problems.indexOf(problem)) {
+      setFocusedIdx(null);
+      setCompletedIdx(null);
+    }
+    notify('Marked as not completed');
+  };
+
+  const queueNext = useMemo(() => {
+    const due = [];
+    problems.forEach((problem, index) => {
+      const record = state[progressKey(problem)];
+      if (record && record.due !== null && record.due <= today()) due.push([index, record.due]);
+    });
+    if (due.length) {
+      due.sort((a, b) => a[1] - b[1]);
+      return { idx: due[0][0], type: 'due' };
+    }
+    const index = problems.findIndex((problem) => !state[progressKey(problem)]);
+    return index === -1 ? null : { idx: index, type: 'new' };
+  }, [problems, state]);
+
+  const current =
+    focusedIdx === null || !problems[focusedIdx]
+      ? queueNext
+      : { idx: focusedIdx, type: state[progressKey(problems[focusedIdx])] ? 'due' : 'new' };
+
+  const moveNext = () => {
+    const start = current ? current.idx + 1 : 0;
+    const remaining = problems.findIndex(
+      (problem, index) => index >= start && !state[progressKey(problem)],
+    );
+    const due = problems
+      .map((problem, index) => ({ index, record: state[progressKey(problem)] }))
+      .find(({ index, record }) => index >= start && record?.due != null && record.due <= today());
+    const index =
+      remaining === -1
+        ? (due?.index ?? problems.findIndex((problem) => !state[progressKey(problem)]))
+        : remaining;
+    if (index === -1) {
+      setFocusedIdx(null);
+      setCompletedIdx(null);
+      notify('All problems completed');
+      return;
+    }
+    setFocusedIdx(index);
+    setCompletedIdx(null);
+    notify('Moved to next problem');
+  };
+
+  const categories = useMemo(() => [...new Set(problems.map((problem) => problem[1]))], [problems]);
+  const doneCount = problems.filter((problem) => state[progressKey(problem)]).length;
+  const dueCount = problems.filter(
+    (problem) => state[progressKey(problem)]?.due !== null && state[progressKey(problem)]?.due <= today(),
+  ).length;
+  const masteredCount = problems.filter(
+    (problem) => state[progressKey(problem)]?.status === 'mastered',
+  ).length;
+  const progress = problems.length ? Math.round((doneCount / problems.length) * 100) : 0;
+
+  return (
+    <div className="app-shell">
+      <Header onReset={resetProgress} />
+      <main className="container main">
+        <Hero activeSet={activeSet} sets={SETS} onSetChange={changeSet} />
+        <Stats
+          doneCount={doneCount}
+          total={problems.length}
+          dueCount={dueCount}
+          masteredCount={masteredCount}
+          progress={progress}
+        />
+        <NextProblemCard
+          next={current}
+          problems={problems}
+          completedIdx={completedIdx}
+          onMarkStarted={markStarted}
+          onMoveNext={moveNext}
+          onGrade={grade}
+          onNotify={notify}
+          problemUrl={problemUrl}
+        />
+        <ProblemList
+          categories={categories}
+          filter={filter}
+          problems={problems}
+          progress={state}
+          onFilterChange={setFilter}
+          onUncomplete={uncomplete}
+          formatDate={formatDate}
+          isDue={(record) => record?.due <= today()}
+          problemUrl={problemUrl}
+          progressKey={progressKey}
+        />
+        <InfoCard />
+      </main>
+      <Fireworks burst={burst} />
+      {feedback && (
+        <div className="toast" role="status">
+          {feedback} ✓
+        </div>
+      )}
+      <footer className="footer">Pattern Recall · Links open directly on LeetCode</footer>
+    </div>
+  );
 }
 
 export default App;
