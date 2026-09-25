@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>NeetCode Spaced Repetition</title>
+<style>
+:root{
+  --bg:#f7f7f8;--card:#fff;--text:#1a1a1a;--sub:#666;--border:#e3e3e6;
+  --accent:#5b5bd6;--accent2:#39a06b;--warn:#d68b00;--danger:#d6435b;--chip:#eef0ff;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){--bg:#131316;--card:#1c1c21;--text:#f0f0f2;--sub:#9a9aa2;--border:#2c2c33;--chip:#26264a;}
+}
+:root[data-theme="dark"]{--bg:#131316;--card:#1c1c21;--text:#f0f0f2;--sub:#9a9aa2;--border:#2c2c33;--chip:#26264a;}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;line-height:1.4}
+header{padding:16px max(16px,env(safe-area-inset-left)) 8px;position:sticky;top:0;background:var(--bg);z-index:5;border-bottom:1px solid var(--border)}
+h1{font-size:18px;margin:0 0 2px}
+.sub{color:var(--sub);font-size:13px}
+main{max-width:760px;margin:0 auto;padding:16px max(16px,env(safe-area-inset-left)) 40px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:14px}
+.stats{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.stat{flex:1;min-width:90px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 12px;text-align:center}
+.stat b{display:block;font-size:20px}
+.stat span{font-size:11px;color:var(--sub)}
+.nextup h2{margin:0 0 4px;font-size:15px}
+.nextup .name{font-size:19px;font-weight:600;margin:4px 0}
+.badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:20px;background:var(--chip);color:var(--accent);margin-right:6px}
+.badge.review{background:#fff1da;color:var(--warn)}
+.badge.due{background:#fde2e6;color:var(--danger)}
+.actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+button{font:inherit;border:none;border-radius:8px;padding:9px 14px;cursor:pointer;font-size:13px}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-ghost{background:var(--chip);color:var(--text)}
+a.btn-link{background:var(--accent2);color:#fff;text-decoration:none;display:inline-block}
+.grade{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.grade button{flex:1;min-width:70px}
+.g0{background:#fde2e6;color:#a5152b}
+.g1{background:#fff1da;color:#8a5b00}
+.g2{background:#e4f5e9;color:#1a7a45}
+.g3{background:#dff3e6;color:#0f6b34}
+details{margin-top:6px}
+summary{cursor:pointer;font-weight:600;font-size:14px;padding:6px 0}
+.prob{display:flex;align-items:center;justify-content:space-between;padding:8px 4px;border-top:1px solid var(--border);font-size:13.5px}
+.prob .pname{display:flex;align-items:center;gap:8px}
+.dot{width:8px;height:8px;border-radius:50%;flex:none}
+.d-new{background:#c7c7cf}
+.d-review{background:var(--warn)}
+.d-mastered{background:var(--accent2)}
+.d-due{background:var(--danger)}
+.diff{font-size:10.5px;color:var(--sub)}
+.prob a{color:var(--accent);text-decoration:none;font-size:12px;white-space:nowrap;margin-left:8px}
+.filterbar{display:flex;gap:8px;margin-bottom:12px;overflow-x:auto}
+.filterbar button{white-space:nowrap;background:var(--chip);color:var(--text)}
+.filterbar button.active{background:var(--accent);color:#fff}
+footer{color:var(--sub);font-size:11.5px;text-align:center;padding:10px 16px 30px}
+</style>
+</head>
+<body>
+<header>
+  <h1>NeetCode 150 · Spaced Repetition Tracker</h1>
+  <div class="sub">Learn in order, review on a schedule that fights forgetting.</div>
+</header>
+<main>
+  <div class="stats" id="stats"></div>
+  <div class="card nextup" id="nextup"></div>
+  <div class="filterbar" id="filterbar"></div>
+  <div class="card" id="list"></div>
+  <div class="card" style="font-size:12.5px;color:var(--sub)">
+    <b style="color:var(--text)">How review timing works:</b> each problem you solve enters a review queue using a simplified SM-2 algorithm
+    (the spacing model behind Anki/SuperMemo, validated for durable retention of applied skills, not just facts).
+    First review after 1 day, then 3, then intervals grow by an ease factor (starts at 2.3, adjusted by how each review felt).
+    "Again" resets it to 1 day; "Hard/Good/Easy" grow the gap. Struggling problems resurface sooner; solid ones fade out to
+    long intervals so you spend time where it's actually needed — this is the same spacing-effect logic used to make pattern
+    recognition (not just answer memorization) stick for problem types like sliding window or DP.
+  </div>
+</main>
+<footer>Progress is stored only in this browser. Problem list follows NeetCode's published 150 roadmap order; links go to LeetCode.</footer>
+<script>
+const P=[
+["Contains Duplicate","Arrays & Hashing","E","contains-duplicate"],
+["Valid Anagram","Arrays & Hashing","E","valid-anagram"],
+["Two Sum","Arrays & Hashing","E","two-sum"],
+["Group Anagrams","Arrays & Hashing","M","group-anagrams"],
+["Top K Frequent Elements","Arrays & Hashing","M","top-k-frequent-elements"],
+["Product of Array Except Self","Arrays & Hashing","M","product-of-array-except-self"],
+["Valid Sudoku","Arrays & Hashing","M","valid-sudoku"],
+["Longest Consecutive Sequence","Arrays & Hashing","M","longest-consecutive-sequence"],
+["Encode and Decode Strings","Arrays & Hashing","M","encode-and-decode-strings"],
+["Valid Palindrome","Two Pointers","E","valid-palindrome"],
+["Two Sum II Input Array Is Sorted","Two Pointers","M","two-sum-ii-input-array-is-sorted"],
+["3Sum","Two Pointers","M","3sum"],
+["Container With Most Water","Two Pointers","M","container-with-most-water"],
+["Trapping Rain Water","Two Pointers","H","trapping-rain-water"],
+["Best Time to Buy and Sell Stock","Sliding Window","E","best-time-to-buy-and-sell-stock"],
+["Longest Substring Without Repeating Characters","Sliding Window","M","longest-substring-without-repeating-characters"],
+["Longest Repeating Character Replacement","Sliding Window","M","longest-repeating-character-replacement"],
+["Permutation in String","Sliding Window","M","permutation-in-string"],
+["Minimum Window Substring","Sliding Window","H","minimum-window-substring"],
+["Sliding Window Maximum","Sliding Window","H","sliding-window-maximum"],
+["Valid Parentheses","Stack","E","valid-parentheses"],
+["Min Stack","Stack","M","min-stack"],
+["Evaluate Reverse Polish Notation","Stack","M","evaluate-reverse-polish-notation"],
+["Generate Parentheses","Stack","M","generate-parentheses"],
+["Daily Temperatures","Stack","M","daily-temperatures"],
+["Car Fleet","Stack","M","car-fleet"],
+["Largest Rectangle in Histogram","Stack","H","largest-rectangle-in-histogram"],
+["Binary Search","Binary Search","E","binary-search"],
+["Search a 2D Matrix","Binary Search","M","search-a-2d-matrix"],
+["Koko Eating Bananas","Binary Search","M","koko-eating-bananas"],
+["Find Minimum in Rotated Sorted Array","Binary Search","M","find-minimum-in-rotated-sorted-array"],
+["Search in Rotated Sorted Array","Binary Search","M","search-in-rotated-sorted-array"],
+["Time Based Key-Value Store","Binary Search","M","time-based-key-value-store"],
+["Median of Two Sorted Arrays","Binary Search","H","median-of-two-sorted-arrays"],
+["Reverse Linked List","Linked List","E","reverse-linked-list"],
+["Merge Two Sorted Lists","Linked List","E","merge-two-sorted-lists"],
+["Reorder List","Linked List","M","reorder-list"],
+["Remove Nth Node From End of List","Linked List","M","remove-nth-node-from-end-of-list"],
+["Copy List with Random Pointer","Linked List","M","copy-list-with-random-pointer"],
+["Add Two Numbers","Linked List","M","add-two-numbers"],
+["Linked List Cycle","Linked List","E","linked-list-cycle"],
+["Find the Duplicate Number","Linked List","M","find-the-duplicate-number"],
+["LRU Cache","Linked List","M","lru-cache"],
+["Merge k Sorted Lists","Linked List","H","merge-k-sorted-lists"],
+["Reverse Nodes in k-Group","Linked List","H","reverse-nodes-in-k-group"],
+["Invert Binary Tree","Trees","E","invert-binary-tree"],
+["Maximum Depth of Binary Tree","Trees","E","maximum-depth-of-binary-tree"],
+["Diameter of Binary Tree","Trees","E","diameter-of-binary-tree"],
+["Balanced Binary Tree","Trees","E","balanced-binary-tree"],
+["Same Tree","Trees","E","same-tree"],
+["Subtree of Another Tree","Trees","E","subtree-of-another-tree"],
+["Lowest Common Ancestor of a Binary Search Tree","Trees","M","lowest-common-ancestor-of-a-binary-search-tree"],
+["Binary Tree Level Order Traversal","Trees","M","binary-tree-level-order-traversal"],
+["Binary Tree Right Side View","Trees","M","binary-tree-right-side-view"],
+["Count Good Nodes in Binary Tree","Trees","M","count-good-nodes-in-binary-tree"],
+["Validate Binary Search Tree","Trees","M","validate-binary-search-tree"],
+["Kth Smallest Element in a BST","Trees","M","kth-smallest-element-in-a-bst"],
+["Construct Binary Tree from Preorder and Inorder Traversal","Trees","M","construct-binary-tree-from-preorder-and-inorder-traversal"],
+["Binary Tree Maximum Path Sum","Trees","H","binary-tree-maximum-path-sum"],
+["Serialize and Deserialize Binary Tree","Trees","H","serialize-and-deserialize-binary-tree"],
+["Implement Trie Prefix Tree","Tries","M","implement-trie-prefix-tree"],
+["Design Add and Search Words Data Structure","Tries","M","design-add-and-search-words-data-structure"],
+["Word Search II","Tries","H","word-search-ii"],
+["Kth Largest Element in a Stream","Heap / Priority Queue","E","kth-largest-element-in-a-stream"],
+["Last Stone Weight","Heap / Priority Queue","E","last-stone-weight"],
+["K Closest Points to Origin","Heap / Priority Queue","M","k-closest-points-to-origin"],
+["Kth Largest Element in an Array","Heap / Priority Queue","M","kth-largest-element-in-an-array"],
+["Task Scheduler","Heap / Priority Queue","M","task-scheduler"],
+["Design Twitter","Heap / Priority Queue","M","design-twitter"],
+["Find Median from Data Stream","Heap / Priority Queue","H","find-median-from-data-stream"],
+["Subsets","Backtracking","M","subsets"],
+["Combination Sum","Backtracking","M","combination-sum"],
+["Permutations","Backtracking","M","permutations"],
+["Subsets II","Backtracking","M","subsets-ii"],
+["Combination Sum II","Backtracking","M","combination-sum-ii"],
+["Word Search","Backtracking","M","word-search"],
+["Palindrome Partitioning","Backtracking","M","palindrome-partitioning"],
+["Letter Combinations of a Phone Number","Backtracking","M","letter-combinations-of-a-phone-number"],
+["N-Queens","Backtracking","H","n-queens"],
+["Number of Islands","Graphs","M","number-of-islands"],
+["Max Area of Island","Graphs","M","max-area-of-island"],
+["Clone Graph","Graphs","M","clone-graph"],
+["Islands and Treasure","Graphs","M","walls-and-gates"],
+["Rotting Oranges","Graphs","M","rotting-oranges"],
+["Pacific Atlantic Water Flow","Graphs","M","pacific-atlantic-water-flow"],
+["Surrounded Regions","Graphs","M","surrounded-regions"],
+["Course Schedule","Graphs","M","course-schedule"],
+["Course Schedule II","Graphs","M","course-schedule-ii"],
+["Redundant Connection","Graphs","M","redundant-connection"],
+["Number of Connected Components in an Undirected Graph","Graphs","M","number-of-connected-components-in-an-undirected-graph"],
+["Graph Valid Tree","Graphs","M","graph-valid-tree"],
+["Word Ladder","Graphs","H","word-ladder"],
+["Reconstruct Itinerary","Advanced Graphs","H","reconstruct-itinerary"],
+["Min Cost to Connect All Points","Advanced Graphs","M","min-cost-to-connect-all-points"],
+["Network Delay Time","Advanced Graphs","M","network-delay-time"],
+["Swim in Rising Water","Advanced Graphs","H","swim-in-rising-water"],
+["Alien Dictionary","Advanced Graphs","H","alien-dictionary"],
+["Cheapest Flights Within K Stops","Advanced Graphs","M","cheapest-flights-within-k-stops"],
+["Climbing Stairs","1-D DP","E","climbing-stairs"],
+["Min Cost Climbing Stairs","1-D DP","E","min-cost-climbing-stairs"],
+["House Robber","1-D DP","M","house-robber"],
+["House Robber II","1-D DP","M","house-robber-ii"],
+["Longest Palindromic Substring","1-D DP","M","longest-palindromic-substring"],
+["Palindromic Substrings","1-D DP","M","palindromic-substrings"],
+["Decode Ways","1-D DP","M","decode-ways"],
+["Coin Change","1-D DP","M","coin-change"],
+["Maximum Product Subarray","1-D DP","M","maximum-product-subarray"],
+["Word Break","1-D DP","M","word-break"],
+["Longest Increasing Subsequence","1-D DP","M","longest-increasing-subsequence"],
+["Partition Equal Subset Sum","1-D DP","M","partition-equal-subset-sum"],
+["Unique Paths","2-D DP","M","unique-paths"],
+["Longest Common Subsequence","2-D DP","M","longest-common-subsequence"],
+["Best Time to Buy and Sell Stock with Cooldown","2-D DP","M","best-time-to-buy-and-sell-stock-with-cooldown"],
+["Coin Change II","2-D DP","M","coin-change-ii"],
+["Target Sum","2-D DP","M","target-sum"],
+["Interleaving String","2-D DP","M","interleaving-string"],
+["Longest Increasing Path in a Matrix","2-D DP","H","longest-increasing-path-in-a-matrix"],
+["Distinct Subsequences","2-D DP","H","distinct-subsequences"],
+["Edit Distance","2-D DP","H","edit-distance"],
+["Burst Balloons","2-D DP","H","burst-balloons"],
+["Regular Expression Matching","2-D DP","H","regular-expression-matching"],
+["Maximum Subarray","Greedy","M","maximum-subarray"],
+["Jump Game","Greedy","M","jump-game"],
+["Jump Game II","Greedy","M","jump-game-ii"],
+["Gas Station","Greedy","M","gas-station"],
+["Hand of Straights","Greedy","M","hand-of-straights"],
+["Merge Triplets to Form Target Triplet","Greedy","M","merge-triplets-to-form-target-triplet"],
+["Partition Labels","Greedy","M","partition-labels"],
+["Valid Parenthesis String","Greedy","M","valid-parenthesis-string"],
+["Insert Interval","Intervals","M","insert-interval"],
+["Merge Intervals","Intervals","M","merge-intervals"],
+["Non-overlapping Intervals","Intervals","M","non-overlapping-intervals"],
+["Meeting Rooms","Intervals","E","meeting-rooms"],
+["Meeting Rooms II","Intervals","M","meeting-rooms-ii"],
+["Minimum Interval to Include Each Query","Intervals","H","minimum-interval-to-include-each-query"],
+["Rotate Image","Math & Geometry","M","rotate-image"],
+["Spiral Matrix","Math & Geometry","M","spiral-matrix"],
+["Set Matrix Zeroes","Math & Geometry","M","set-matrix-zeroes"],
+["Happy Number","Math & Geometry","E","happy-number"],
+["Plus One","Math & Geometry","E","plus-one"],
+["Pow(x, n)","Math & Geometry","M","powx-n"],
+["Multiply Strings","Math & Geometry","M","multiply-strings"],
+["Detect Squares","Math & Geometry","M","detect-squares"],
+["Single Number","Bit Manipulation","E","single-number"],
+["Number of 1 Bits","Bit Manipulation","E","number-of-1-bits"],
+["Counting Bits","Bit Manipulation","E","counting-bits"],
+["Reverse Bits","Bit Manipulation","E","reverse-bits"],
+["Missing Number","Bit Manipulation","E","missing-number"],
+["Sum of Two Integers","Bit Manipulation","M","sum-of-two-integers"],
+["Reverse Integer","Bit Manipulation","M","reverse-integer"]
+];
+const KEY="neetcode_sr_v1";
+let state=JSON.parse(localStorage.getItem(KEY)||"{}");
+function save(){try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){}}
+function today(){return new Date().setHours(0,0,0,0);}
+function daysFromNow(n){return today()+n*86400000;}
+function getRec(i){return state[i]||{status:"new",ef:2.3,interval:0,reps:0,due:null,last:null};}
+function grade(i,g){ // g: 0 again,1 hard,2 good,3 easy
+  let r=getRec(i);
+  r.last=today();
+  if(g===0){r.reps=0;r.interval=1;r.ef=Math.max(1.3,r.ef-0.2);}
+  else{
+    r.reps=(r.reps||0)+1;
+    if(g===1)r.ef=Math.max(1.3,r.ef-0.15);
+    if(g===3)r.ef+=0.15;
+    if(r.reps===1)r.interval=1;
+    else if(r.reps===2)r.interval=3;
+    else r.interval=Math.round(r.interval*r.ef*(g===1?0.75:1));
+  }
+  r.due=daysFromNow(r.interval);
+  r.status=r.interval>=21?"mastered":"review";
+  state[i]=r;save();render();
+}
+function markStarted(i){
+  let r=getRec(i);
+  if(r.status==="new"){r.status="review";r.reps=0;r.ef=2.3;r.interval=1;r.due=daysFromNow(1);r.last=today();state[i]=r;save();}
+  render();
+}
+function nextIndex(){
+  let due=[];
+  P.forEach((p,i)=>{let r=state[i];if(r&&r.due!==null&&r.due<=today())due.push([i,r.due]);});
+  if(due.length){due.sort((a,b)=>a[1]-b[1]);return {idx:due[0][0],type:"due"};}
+  let firstNew=P.findIndex((p,i)=>!state[i]);
+  if(firstNew!==-1)return {idx:firstNew,type:"new"};
+  return null;
+}
+let filter="all";
+function render(){
+  let doneCount=Object.values(state).filter(r=>r).length;
+  let dueCount=P.filter((p,i)=>state[i]&&state[i].due!==null&&state[i].due<=today()).length;
+  let masteredCount=Object.values(state).filter(r=>r&&r.status==="mastered").length;
+  document.getElementById("stats").innerHTML=`
+    <div class="stat"><b>${doneCount}/${P.length}</b><span>Attempted</span></div>
+    <div class="stat"><b>${dueCount}</b><span>Due now</span></div>
+    <div class="stat"><b>${masteredCount}</b><span>Mastered</span></div>`;
+  let nx=nextIndex();
+  let nu=document.getElementById("nextup");
+  if(!nx){nu.innerHTML="<h2>All caught up 🎉</h2><div class='sub'>No new problems left and nothing due for review.</div>";}
+  else{
+    let p=P[nx.idx];
+    let isDue=nx.type==="due";
+    nu.innerHTML=`<h2>Next up</h2>
+      <span class="badge ${isDue?'review':''}">${isDue?'Review':'New'}</span>
+      <span class="badge">${p[1]}</span><span class="badge">${p[2]}</span>
+      <div class="name">${p[0]}</div>
+      <div class="actions">
+        <a class="btn-link" target="_blank" href="https://leetcode.com/problems/${p[3]}/">Open on LeetCode ↗</a>
+        ${!isDue?`<button class="btn-primary" onclick="markStarted(${nx.idx})">Mark as done → schedule review</button>`:""}
+      </div>
+      ${isDue?`<div class="sub" style="margin-top:8px">How'd it go this time?</div>
+      <div class="grade">
+        <button class="g0" onclick="grade(${nx.idx},0)">Blanked</button>
+        <button class="g1" onclick="grade(${nx.idx},1)">Hard</button>
+        <button class="g2" onclick="grade(${nx.idx},2)">Good</button>
+        <button class="g3" onclick="grade(${nx.idx},3)">Easy</button>
+      </div>`:""}
+    `;
+  }
+  let cats=[...new Set(P.map(p=>p[1]))];
+  document.getElementById("filterbar").innerHTML=["all",...cats].map(c=>
+    `<button class="${filter===c?'active':''}" onclick="setFilter('${c.replace(/'/g,"\\'")}')">${c==='all'?'All':c}</button>`).join("");
+  let list=document.getElementById("list");
+  list.innerHTML=cats.filter(c=>filter==="all"||filter===c).map(cat=>{
+    let items=P.map((p,i)=>({p,i})).filter(o=>o.p[1]===cat);
+    let doneInCat=items.filter(o=>state[o.i]).length;
+    let rows=items.map(({p,i})=>{
+      let r=state[i];
+      let cls="d-new",label="Not started";
+      if(r){
+        if(r.status==="mastered"){cls="d-mastered";label="Mastered · next review "+fmt(r.due);}
+        else if(r.due<=today()){cls="d-due";label="Due for review";}
+        else{cls="d-review";label="Reviewing · next "+fmt(r.due);}
+      }
+      return `<div class="prob"><div class="pname"><span class="dot ${cls}"></span>${p[0]} <span class="diff">${p[2]} · ${label}</span></div>
+        <a target="_blank" href="https://leetcode.com/problems/${p[3]}/">Solve ↗</a></div>`;
+    }).join("");
+    return `<details ${filter===cat?"open":""}><summary>${cat} (${doneInCat}/${items.length})</summary>${rows}</details>`;
+  }).join("");
+}
+function fmt(ts){let d=new Date(ts);return d.toLocaleDateString(undefined,{month:'short',day:'numeric'});}
+function setFilter(c){filter=c;render();}
+render();
+</script>
+</body>
+</html>
