@@ -157,11 +157,30 @@ const EXTRA=[
 const MORE=[
   ["Subarray Sum Equals K","Arrays & Hashing","M","subarray-sum-equals-k"],["Longest Consecutive Sequence II","Arrays & Hashing","M","longest-consecutive-sequence-ii"],["Find All Numbers Disappeared in an Array","Arrays & Hashing","E","find-all-numbers-disappeared-in-an-array"],["Minimum Size Subarray Sum","Sliding Window","M","minimum-size-subarray-sum"],["Substring with Concatenation of All Words","Sliding Window","H","substring-with-concatenation-of-all-words"],["Basic Calculator","Stack","H","basic-calculator"],["Remove K Digits","Stack","M","remove-k-digits"],["Online Stock Span","Stack","M","online-stock-span"],["Search in Rotated Sorted Array II","Binary Search","M","search-in-rotated-sorted-array-ii"],["Random Pick with Weight","Binary Search","M","random-pick-with-weight"],["Add Two Numbers II","Linked List","M","add-two-numbers-ii"],["Flatten a Multilevel Doubly Linked List","Linked List","M","flatten-a-multilevel-doubly-linked-list"],["Design Circular Queue","Linked List","M","design-circular-queue"],["Populating Next Right Pointers in Each Node","Trees","M","populating-next-right-pointers-in-each-node"],["Binary Tree Paths","Trees","E","binary-tree-paths"],["Find Duplicate Subtrees","Trees","M","find-duplicate-subtrees"],["Word Search III","Tries","H","word-search-iii"],["Top K Frequent Words","Heap / Priority Queue","M","top-k-frequent-words"],["Find K Pairs with Smallest Sums","Heap / Priority Queue","M","find-k-pairs-with-smallest-sums"],["Sliding Window Median","Heap / Priority Queue","H","sliding-window-median"],["Restore IP Addresses","Backtracking","M","restore-ip-addresses"],["Partition to K Equal Sum Subsets","Backtracking","M","partition-to-k-equal-sum-subsets"],["Graph Valid Tree II","Graphs","M","graph-valid-tree-ii"],["Evaluate Division","Graphs","M","evaluate-division"],["Snakes and Ladders","Graphs","M","snakes-and-ladders"],["Dijkstra Shortest Path","Advanced Graphs","M","network-delay-time"],["Critical Connections in a Network","Advanced Graphs","H","critical-connections-in-a-network"],["Reorder Routes to Make All Paths Lead to the City Zero","Advanced Graphs","M","reorder-routes-to-make-all-paths-lead-to-the-city-zero"],["Delete and Earn","1-D DP","M","delete-and-earn"],["Paint House","1-D DP","M","paint-house"],["Minimum Path Sum","2-D DP","M","minimum-path-sum"],["Dungeon Game","2-D DP","H","dungeon-game"],["House Robber III","2-D DP","M","house-robber-iii"],["Maximum Length of Repeated Subarray","2-D DP","M","maximum-length-of-repeated-subarray"],["Wiggle Subsequence","Greedy","M","wiggle-subsequence"],["Queue Reconstruction by Height","Greedy","M","queue-reconstruction-by-height"],["Minimum Number of Arrows to Burst Balloons","Intervals","M","minimum-number-of-arrows-to-burst-balloons"],["Data Stream as Disjoint Intervals","Intervals","H","data-stream-as-disjoint-intervals"],["Valid Number","Math & Geometry","H","valid-number"],["Integer to Roman","Math & Geometry","M","integer-to-roman"],["Sqrt(x)","Math & Geometry","E","sqrtx"],["Excel Sheet Column Number","Math & Geometry","E","excel-sheet-column-number"],["Reverse Linked List II","Linked List","M","reverse-linked-list-ii"],["Rotate List","Linked List","M","rotate-list"],["Binary Tree Inorder Traversal","Trees","E","binary-tree-inorder-traversal"],["Binary Tree Preorder Traversal","Trees","E","binary-tree-preorder-traversal"],["Binary Tree Postorder Traversal","Trees","E","binary-tree-postorder-traversal"],["Symmetric Tree","Trees","E","symmetric-tree"],["Minimum Depth of Binary Tree","Trees","E","minimum-depth-of-binary-tree"],["Course Schedule III","Advanced Graphs","H","course-schedule-iii"],["Fibonacci Number","1-D DP","E","fibonacci-number"],["Climbing Stairs with Cost","1-D DP","E","min-cost-climbing-stairs"],["Combination Sum IV","1-D DP","M","combination-sum-iv"],["House Robber IV","1-D DP","M","house-robber-iv"],["Minimum Falling Path Sum","2-D DP","M","minimum-falling-path-sum"],["Triangle Minimum Path","2-D DP","M","triangle"],["Jump Game VII","Greedy","M","jump-game-vii"],["Partition Array for Maximum Sum","Greedy","M","partition-array-for-maximum-sum"],["Interval Scheduling","Intervals","M","interval-scheduling"],["Number Complement","Bit Manipulation","E","number-complement"],["Reverse Bits II","Bit Manipulation","E","reverse-bits"]
 ];
+const SUPPLEMENT=[
+  ["Binary Tree Cameras","Trees","H","binary-tree-cameras"],
+  ["Word Ladder","Graphs","H","word-ladder"],
+  ["Network Delay Time","Advanced Graphs","M","network-delay-time-ii"],
+  ["Unique Paths II","2-D DP","M","unique-paths-ii"],
+  ["Burst Balloons","2-D DP","H","burst-balloons"],
+  ["Partition Equal Subset Sum","1-D DP","M","partition-equal-subset-sum"],
+  ["Stock with Cooldown","1-D DP","M","best-time-to-buy-and-sell-stock-with-cooldown"],
+  ["Merge Intervals II","Intervals","M","merge-intervals-ii"],
+  ["Happy Number II","Math & Geometry","E","happy-number-ii"],
+  ["Reverse String","Two Pointers","E","reverse-string"],
+  ["Valid Parentheses II","Stack","E","valid-parentheses-ii"],
+  ["Longest Increasing Path in a Matrix","Graphs","H","longest-increasing-path-in-a-matrix"],
+  ["Minimum Genetic Mutation","Graphs","M","minimum-genetic-mutation"],
+  ["Edit Distance","2-D DP","H","edit-distance"],
+  ["Design HashMap","Arrays & Hashing","E","design-hashmap"],
+  ["Design HashSet","Arrays & Hashing","E","design-hashset"],
+  ["Find First and Last Position","Binary Search","M","find-first-and-last-position-of-element-in-sorted-array"]
+];
 const uniqueProblems=(...groups)=>{const seen=new Set();return groups.flat().filter(problem=>{if(seen.has(problem[3]))return false;seen.add(problem[3]);return true;});};
 const SETS={
   blind75:{label:"Blind 75",description:"The classic interview essentials, sharpened one review at a time.",problems:P.filter(p=>BLIND75.has(p[3]))},
   neetcode150:{label:"NeetCode 150",description:"The complete pattern-first roadmap, ready when you are.",problems:P},
-  neetcode250:{label:"NeetCode 250",description:"A deeper library of patterns for a more thorough interview prep cycle.",problems:uniqueProblems(P,EXTRA,MORE.slice(0,60))}
+  neetcode250:{label:"NeetCode 250",description:"A deeper library of patterns for a more thorough interview prep cycle.",problems:uniqueProblems(P,EXTRA,MORE.slice(0,60),SUPPLEMENT)}
 };
 
 export { SETS };

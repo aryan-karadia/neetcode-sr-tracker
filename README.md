@@ -19,6 +19,25 @@ Create a production build with:
 npm run build
 ```
 
+Run the test suite with:
+
+```sh
+npm test
+```
+
+## CI/CD And Netlify
+
+The GitHub Actions workflow in `.github/workflows/ci-cd.yml` installs dependencies with
+`npm ci`, runs the Vitest test suite, builds the application, and uploads the generated
+`dist` directory as the `netlify-dist` artifact. Pull requests targeting `main` run the
+test and build checks. A push to `main` downloads that same artifact and deploys it to
+Netlify, so deployment cannot bypass the tested build.
+
+To enable deployment, add these repository secrets in GitHub:
+
+- `NETLIFY_AUTH_TOKEN` — a Netlify personal access token.
+- `NETLIFY_SITE_ID` — the Netlify site ID for this application.
+
 ## How It Works
 
 - **Practice sets** can be changed at any time from Blind 75 to NeetCode 150, the default, or NeetCode 250. Progress and review history are shared for matching problems across every set, so completing a problem in one list also completes it in every list that contains it.
