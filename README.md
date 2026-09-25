@@ -1,6 +1,42 @@
 # Pattern Recall · Coding Interview Tracker
 
-A single-file React web app for practicing the [Blind 75](https://neetcode.io/practice), [NeetCode 150](https://neetcode.io/practice), or NeetCode 250 roadmap in roadmap order. It combines a focused daily queue with spaced repetition so algorithmic patterns become easier to recall under interview pressure.
+A Vite-powered React web app for practicing the [Blind 75](https://neetcode.io/practice), [NeetCode 150](https://neetcode.io/practice), or NeetCode 250 roadmap in roadmap order. It combines a focused daily queue with spaced repetition so algorithmic patterns become easier to recall under interview pressure.
+
+## Development
+
+Install dependencies and start the Vite development server:
+
+```sh
+npm install
+npm run dev
+```
+
+The project includes Tailwind CSS and the standard shadcn/ui configuration. New shadcn components can be added with the shadcn CLI and will use the `@/components/ui` and `@/lib` aliases.
+
+Create a production build with:
+
+```sh
+npm run build
+```
+
+Run the test suite with:
+
+```sh
+npm test
+```
+
+## CI/CD And Netlify
+
+The GitHub Actions workflow in `.github/workflows/ci-cd.yml` installs dependencies with
+`npm ci`, runs the Vitest test suite, builds the application, and uploads the generated
+`dist` directory as the `netlify-dist` artifact. Pull requests targeting `main` run the
+test and build checks. A push to `main` downloads that same artifact and deploys it to
+Netlify, so deployment cannot bypass the tested build.
+
+To enable deployment, add these repository secrets in GitHub:
+
+- `NETLIFY_AUTH_TOKEN` — a Netlify personal access token.
+- `NETLIFY_SITE_ID` — the Netlify site ID for this application.
 
 ## How It Works
 
