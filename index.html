@@ -3,83 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>NeetCode Spaced Repetition</title>
+<title>Pattern Recall · Coding Interview Tracker</title>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 <style>
-:root{
-  --bg:#f7f7f8;--card:#fff;--text:#1a1a1a;--sub:#666;--border:#e3e3e6;
-  --accent:#5b5bd6;--accent2:#39a06b;--warn:#d68b00;--danger:#d6435b;--chip:#eef0ff;
-  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
-}
-@media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]){--bg:#131316;--card:#1c1c21;--text:#f0f0f2;--sub:#9a9aa2;--border:#2c2c33;--chip:#26264a;}
-}
-:root[data-theme="dark"]{--bg:#131316;--card:#1c1c21;--text:#f0f0f2;--sub:#9a9aa2;--border:#2c2c33;--chip:#26264a;}
-*{box-sizing:border-box}
-html{scroll-padding-top:env(safe-area-inset-top,0px)}
-body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;line-height:1.4}
-header{padding:16px max(16px,env(safe-area-inset-left)) 8px;position:sticky;top:0;background:var(--bg);z-index:5;border-bottom:1px solid var(--border)}
-h1{font-size:18px;margin:0 0 2px}
-.sub{color:var(--sub);font-size:13px}
-main{max-width:760px;margin:0 auto;padding:16px max(16px,env(safe-area-inset-left)) 40px}
-.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:14px}
-.stats{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
-.stat{flex:1;min-width:90px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 12px;text-align:center}
-.stat b{display:block;font-size:20px}
-.stat span{font-size:11px;color:var(--sub)}
-.nextup h2{margin:0 0 4px;font-size:15px}
-.nextup .name{font-size:19px;font-weight:600;margin:4px 0}
-.badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:20px;background:var(--chip);color:var(--accent);margin-right:6px}
-.badge.review{background:#fff1da;color:var(--warn)}
-.badge.due{background:#fde2e6;color:var(--danger)}
-.actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
-button{font:inherit;border:none;border-radius:8px;padding:9px 14px;cursor:pointer;font-size:13px}
-.btn-primary{background:var(--accent);color:#fff}
-.btn-ghost{background:var(--chip);color:var(--text)}
-a.btn-link{background:var(--accent2);color:#fff;text-decoration:none;display:inline-block}
-.grade{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
-.grade button{flex:1;min-width:70px}
-.g0{background:#fde2e6;color:#a5152b}
-.g1{background:#fff1da;color:#8a5b00}
-.g2{background:#e4f5e9;color:#1a7a45}
-.g3{background:#dff3e6;color:#0f6b34}
-details{margin-top:6px}
-summary{cursor:pointer;font-weight:600;font-size:14px;padding:6px 0}
-.prob{display:flex;align-items:center;justify-content:space-between;padding:8px 4px;border-top:1px solid var(--border);font-size:13.5px}
-.prob .pname{display:flex;align-items:center;gap:8px}
-.dot{width:8px;height:8px;border-radius:50%;flex:none}
-.d-new{background:#c7c7cf}
-.d-review{background:var(--warn)}
-.d-mastered{background:var(--accent2)}
-.d-due{background:var(--danger)}
-.diff{font-size:10.5px;color:var(--sub)}
-.prob a{color:var(--accent);text-decoration:none;font-size:12px;white-space:nowrap;margin-left:8px}
-.filterbar{display:flex;gap:8px;margin-bottom:12px;overflow-x:auto}
-.filterbar button{white-space:nowrap;background:var(--chip);color:var(--text)}
-.filterbar button.active{background:var(--accent);color:#fff}
-footer{color:var(--sub);font-size:11.5px;text-align:center;padding:10px 16px 30px}
+:root{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#e8eef2;background:#080c12;font-synthesis:none;--bg:#080c12;--surface:#101722;--surface-2:#151f2c;--border:#273444;--muted:#8d9aaa;--text:#e8eef2;--primary:#a3e635;--primary-foreground:#17210a;--blue:#8ab4ff;--amber:#f6c86e;--red:#fb7185}*{box-sizing:border-box}body{margin:0;min-width:320px;background:radial-gradient(circle at 50% -10%,#19263a 0,#080c12 48%) fixed}button,select{font:inherit}button{cursor:pointer}.app-shell{min-height:100vh}.container{width:min(1120px,calc(100% - 40px));margin:auto}.header{border-bottom:1px solid rgba(39,52,68,.8);background:rgba(8,12,18,.78);backdrop-filter:blur(18px);position:sticky;top:0;z-index:10}.header-inner{height:72px;display:flex;align-items:center;justify-content:space-between;gap:20px}.brand{display:flex;align-items:center;gap:12px}.logo{display:grid;place-items:center;width:36px;height:36px;border:1px solid #bedb4c;border-radius:10px;background:#24340e;color:var(--primary);font-weight:900;letter-spacing:-1px}.brand-name{font-size:15px;font-weight:700;letter-spacing:-.2px}.brand-sub{font-size:12px;color:var(--muted);margin-top:2px}.private-note{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:7px}.status-dot{width:7px;height:7px;border-radius:50%;background:var(--primary);box-shadow:0 0 12px #a3e635}.main{padding:56px 0 72px}.hero{display:flex;justify-content:space-between;align-items:flex-end;gap:32px;margin-bottom:30px}.eyebrow{font-size:11px;font-weight:800;color:var(--primary);letter-spacing:1.5px;text-transform:uppercase;margin:0 0 10px}.hero h1{font-size:clamp(30px,5vw,48px);line-height:1.02;letter-spacing:-2px;margin:0;max-width:620px}.hero-copy{color:var(--muted);font-size:14px;max-width:570px;margin:14px 0 0;line-height:1.65}.select-group{width:210px;flex:none}.label{display:block;font-size:11px;font-weight:700;color:var(--muted);margin-bottom:8px}.select{width:100%;height:40px;padding:0 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);outline:none}.select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(163,230,53,.15)}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}.card{border:1px solid var(--border);border-radius:12px;background:rgba(16,23,34,.9);box-shadow:0 18px 42px rgba(0,0,0,.18)}.stat{padding:17px 18px}.stat-value{display:block;font-size:24px;font-weight:750;letter-spacing:-1px}.stat-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.9px}.progress{height:4px;border-radius:999px;background:#243140;overflow:hidden;margin-top:11px}.progress-bar{height:100%;border-radius:inherit;background:var(--primary);transition:width .3s ease}.next-card{padding:24px;position:relative;overflow:hidden;background:linear-gradient(135deg,#182436,#111b28)}.next-card:after{content:"";position:absolute;right:-65px;top:-100px;width:250px;height:250px;border:1px solid rgba(163,230,53,.2);border-radius:50%;box-shadow:0 0 0 26px rgba(163,230,53,.04),0 0 0 52px rgba(163,230,53,.025)}.next-heading{font-size:11px;font-weight:800;letter-spacing:1.3px;text-transform:uppercase;color:var(--primary);margin:0 0 18px}.next-title{font-size:27px;letter-spacing:-.8px;margin:12px 0 7px;position:relative;z-index:1}.next-meta{font-size:13px;color:var(--muted);position:relative;z-index:1}.badges{display:flex;gap:7px;flex-wrap:wrap;position:relative;z-index:1}.badge{display:inline-flex;align-items:center;border-radius:6px;padding:4px 8px;font-size:10px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;background:#243140;color:#c9d7e6}.badge.primary{background:#29420d;color:var(--primary)}.badge.review{background:#493b1d;color:var(--amber)}.badge.due{background:#4a2731;color:#ff9cae}.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:20px;position:relative;z-index:1}.btn{display:inline-flex;align-items:center;justify-content:center;border:1px solid transparent;border-radius:7px;padding:9px 13px;font-size:12px;font-weight:700;text-decoration:none;transition:transform .15s,background .15s}.btn:hover{transform:translateY(-1px)}.btn-primary{background:var(--primary);color:var(--primary-foreground)}.btn-secondary{background:#243140;color:var(--text)}.btn-outline{border-color:var(--border);background:transparent;color:var(--text)}.grade{display:flex;gap:7px;flex-wrap:wrap;margin-top:14px;position:relative;z-index:1}.grade .btn{flex:1;min-width:82px}.grade-again{background:#4a2731;color:#ff9cae}.grade-hard{background:#493b1d;color:var(--amber)}.grade-good{background:#183e3a;color:#94e9db}.grade-easy{background:#1d452b;color:#a9efbb}.toolbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:28px 0 12px}.toolbar h2{font-size:16px;margin:0;letter-spacing:-.3px}.filters{display:flex;gap:7px;overflow-x:auto;padding-bottom:3px}.filter{white-space:nowrap;border:1px solid var(--border);border-radius:999px;background:transparent;color:var(--muted);padding:7px 11px;font-size:11px}.filter.active{background:var(--primary);border-color:var(--primary);color:var(--primary-foreground);font-weight:800}.list-card{padding:0 20px}.accordion{border-bottom:1px solid var(--border)}.accordion:last-child{border-bottom:0}.accordion-trigger{width:100%;display:flex;justify-content:space-between;align-items:center;padding:16px 3px;background:transparent;color:var(--text);border:0;font-size:13px;font-weight:750;text-align:left}.accordion-trigger span{color:var(--muted);font-weight:500}.problem{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 3px;border-top:1px solid rgba(39,52,68,.55);font-size:13px}.problem-name{display:flex;align-items:center;gap:9px;min-width:0}.problem-name span:last-child{color:var(--muted);font-size:11px}.problem-link{color:var(--blue);font-size:11px;text-decoration:none;white-space:nowrap}.dot{width:8px;height:8px;border-radius:50%;flex:none}.dot.new{background:#657487}.dot.review{background:var(--amber)}.dot.mastered{background:var(--primary)}.dot.due{background:var(--red)}.info{padding:19px 20px;margin-top:18px;color:var(--muted);font-size:12px;line-height:1.65}.info strong{color:var(--text)}.footer{text-align:center;color:var(--muted);font-size:11px;padding:0 20px 28px}@media(max-width:700px){.container{width:min(100% - 28px,1120px)}.header-inner{height:64px}.private-note{display:none}.main{padding-top:36px}.hero{display:block}.select-group{margin-top:22px;width:100%}.stats{grid-template-columns:repeat(2,1fr)}.next-title{font-size:23px}.toolbar{display:block}.toolbar h2{margin-bottom:12px}.problem-name{align-items:flex-start;flex-wrap:wrap}.problem-name span:last-child{width:100%;margin-left:17px}}
 </style>
 </head>
-<body>
-<header>
-  <h1>NeetCode 150 · Spaced Repetition Tracker</h1>
-  <div class="sub">Learn in order, review on a schedule that fights forgetting.</div>
-</header>
-<main>
-  <div class="stats" id="stats"></div>
-  <div class="card nextup" id="nextup"></div>
-  <div class="filterbar" id="filterbar"></div>
-  <div class="card" id="list"></div>
-  <div class="card" style="font-size:12.5px;color:var(--sub)">
-    <b style="color:var(--text)">How review timing works:</b> each problem you solve enters a review queue using a simplified SM-2 algorithm
-    (the spacing model behind Anki/SuperMemo, validated for durable retention of applied skills, not just facts).
-    First review after 1 day, then 3, then intervals grow by an ease factor (starts at 2.3, adjusted by how each review felt).
-    "Again" resets it to 1 day; "Hard/Good/Easy" grow the gap. Struggling problems resurface sooner; solid ones fade out to
-    long intervals so you spend time where it's actually needed — this is the same spacing-effect logic used to make pattern
-    recognition (not just answer memorization) stick for problem types like sliding window or DP.
-  </div>
-</main>
-<footer>Progress is stored only in this browser. Problem list follows NeetCode's published 150 roadmap order; links go to LeetCode.</footer>
-<script>
+<body><div id="root"></div>
+<script type="text/babel">
 const P=[
 ["Contains Duplicate","Arrays & Hashing","E","contains-duplicate"],
 ["Valid Anagram","Arrays & Hashing","E","valid-anagram"],
@@ -232,97 +165,39 @@ const P=[
 ["Sum of Two Integers","Bit Manipulation","M","sum-of-two-integers"],
 ["Reverse Integer","Bit Manipulation","M","reverse-integer"]
 ];
-const KEY="neetcode_sr_v1";
-let state=JSON.parse(localStorage.getItem(KEY)||"{}");
-function save(){try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){}}
-function today(){return new Date().setHours(0,0,0,0);}
-function daysFromNow(n){return today()+n*86400000;}
-function getRec(i){return state[i]||{status:"new",ef:2.3,interval:0,reps:0,due:null,last:null};}
-function grade(i,g){ // g: 0 again,1 hard,2 good,3 easy
-  let r=getRec(i);
-  r.last=today();
-  if(g===0){r.reps=0;r.interval=1;r.ef=Math.max(1.3,r.ef-0.2);}
-  else{
-    r.reps=(r.reps||0)+1;
-    if(g===1)r.ef=Math.max(1.3,r.ef-0.15);
-    if(g===3)r.ef+=0.15;
-    if(r.reps===1)r.interval=1;
-    else if(r.reps===2)r.interval=3;
-    else r.interval=Math.round(r.interval*r.ef*(g===1?0.75:1));
-  }
-  r.due=daysFromNow(r.interval);
-  r.status=r.interval>=21?"mastered":"review";
-  state[i]=r;save();render();
+const BLIND75=new Set(`contains-duplicate valid-anagram two-sum group-anagrams top-k-frequent-elements product-of-array-except-self valid-sudoku encode-and-decode-strings longest-consecutive-sequence valid-parentheses best-time-to-buy-and-sell-stock valid-palindrome longest-substring-without-repeating-characters 3sum container-with-most-water trapping-rain-water binary-search search-a-2d-matrix-ii best-time-to-buy-and-sell-stock reverse-linked-list merge-two-sorted-lists reorder-list remove-nth-node-from-end-of-list linked-list-cycle invert-binary-tree maximum-depth-of-binary-tree same-tree lowest-common-ancestor-of-a-binary-search-tree binary-tree-level-order-traversal validate-binary-search-tree kth-smallest-element-in-a-bst serialize-and-deserialize-binary-tree number-of-islands clone-graph max-area-of-island pacific-atlantic-water-flow course-schedule graph-valid-tree longest-consecutive-sequence longest-palindromic-substring palindromic-substrings climb-stairs coin-change house-robber maximum-product-subarray word-break combination-sum word-search subsets permutations maximum-subarray jump-game jump-game-ii insert-interval merge-intervals non-overlapping-intervals meeting-rooms meeting-rooms-ii rotate-image spiral-matrix set-matrix-zeroes happy-number missing-number counting-bits sum-of-two-integers`.split(" "));
+const EXTRA=[
+  ["Find the Difference","Arrays & Hashing","E","find-the-difference"],["Longest Common Prefix","Arrays & Hashing","E","longest-common-prefix"],["Majority Element","Arrays & Hashing","E","majority-element"],["Sort Colors","Two Pointers","M","sort-colors"],["3Sum Closest","Two Pointers","M","3sum-closest"],["Longest Repeating Character Replacement","Sliding Window","M","longest-repeating-character-replacement"],["Asteroid Collision","Stack","M","asteroid-collision"],["Decode String","Stack","M","decode-string"],["Next Greater Element I","Stack","E","next-greater-element-i"],["Pow(x, n)","Binary Search","M","powx-n"],["Find Peak Element","Binary Search","M","find-peak-element"],["Intersection of Two Linked Lists","Linked List","E","intersection-of-two-linked-lists"],["Palindrome Linked List","Linked List","E","palindrome-linked-list"],["Design Linked List","Linked List","M","design-linked-list"],["Binary Tree Zigzag Level Order Traversal","Trees","M","binary-tree-zigzag-level-order-traversal"],["Path Sum","Trees","E","path-sum"],["Serialize and Deserialize BST","Trees","M","serialize-and-deserialize-bst"],["Implement Trie","Tries","M","implement-trie-prefix-tree"],["Kth Largest Element in a Stream","Heap / Priority Queue","E","kth-largest-element-in-a-stream"],["Reorganize String","Heap / Priority Queue","M","reorganize-string"],["Combination Sum III","Backtracking","M","combination-sum-iii"],["Sudoku Solver","Backtracking","H","sudoku-solver"],["Open the Lock","Graphs","M","open-the-lock"],["Accounts Merge","Advanced Graphs","M","accounts-merge"],["Number of Ways to Arrive at Destination","Advanced Graphs","M","number-of-ways-to-arrive-at-destination"],["Longest Common Subsequence","2-D DP","M","longest-common-subsequence"],["Decode Ways","1-D DP","M","decode-ways"],["Perfect Squares","1-D DP","M","perfect-squares"],["Triangle","2-D DP","M","triangle"],["Maximal Square","2-D DP","M","maximal-square"],["Maximum Subarray Sum with One Deletion","Greedy","M","maximum-subarray-sum-with-one-deletion"],["Candy","Greedy","H","candy"],["Interval List Intersections","Intervals","M","interval-list-intersections"],["Employee Free Time","Intervals","H","employee-free-time"],["Gas Station","Greedy","M","gas-station"],["Roman to Integer","Math & Geometry","E","roman-to-integer"],["String to Integer (atoi)","Math & Geometry","M","string-to-integer-atoi"],["Multiply Strings","Math & Geometry","M","multiply-strings"],["Power of Two","Bit Manipulation","E","power-of-two"],["Bitwise AND of Numbers Range","Bit Manipulation","M","bitwise-and-of-numbers-range"]
+];
+const MORE=[
+  ["Subarray Sum Equals K","Arrays & Hashing","M","subarray-sum-equals-k"],["Longest Consecutive Sequence II","Arrays & Hashing","M","longest-consecutive-sequence-ii"],["Find All Numbers Disappeared in an Array","Arrays & Hashing","E","find-all-numbers-disappeared-in-an-array"],["Minimum Size Subarray Sum","Sliding Window","M","minimum-size-subarray-sum"],["Substring with Concatenation of All Words","Sliding Window","H","substring-with-concatenation-of-all-words"],["Basic Calculator","Stack","H","basic-calculator"],["Remove K Digits","Stack","M","remove-k-digits"],["Online Stock Span","Stack","M","online-stock-span"],["Search in Rotated Sorted Array II","Binary Search","M","search-in-rotated-sorted-array-ii"],["Random Pick with Weight","Binary Search","M","random-pick-with-weight"],["Add Two Numbers II","Linked List","M","add-two-numbers-ii"],["Flatten a Multilevel Doubly Linked List","Linked List","M","flatten-a-multilevel-doubly-linked-list"],["Design Circular Queue","Linked List","M","design-circular-queue"],["Populating Next Right Pointers in Each Node","Trees","M","populating-next-right-pointers-in-each-node"],["Binary Tree Paths","Trees","E","binary-tree-paths"],["Find Duplicate Subtrees","Trees","M","find-duplicate-subtrees"],["Word Search III","Tries","H","word-search-iii"],["Top K Frequent Words","Heap / Priority Queue","M","top-k-frequent-words"],["Find K Pairs with Smallest Sums","Heap / Priority Queue","M","find-k-pairs-with-smallest-sums"],["Sliding Window Median","Heap / Priority Queue","H","sliding-window-median"],["Restore IP Addresses","Backtracking","M","restore-ip-addresses"],["Partition to K Equal Sum Subsets","Backtracking","M","partition-to-k-equal-sum-subsets"],["Graph Valid Tree II","Graphs","M","graph-valid-tree-ii"],["Evaluate Division","Graphs","M","evaluate-division"],["Snakes and Ladders","Graphs","M","snakes-and-ladders"],["Dijkstra Shortest Path","Advanced Graphs","M","network-delay-time"],["Critical Connections in a Network","Advanced Graphs","H","critical-connections-in-a-network"],["Reorder Routes to Make All Paths Lead to the City Zero","Advanced Graphs","M","reorder-routes-to-make-all-paths-lead-to-the-city-zero"],["Delete and Earn","1-D DP","M","delete-and-earn"],["Paint House","1-D DP","M","paint-house"],["Minimum Path Sum","2-D DP","M","minimum-path-sum"],["Dungeon Game","2-D DP","H","dungeon-game"],["House Robber III","2-D DP","M","house-robber-iii"],["Maximum Length of Repeated Subarray","2-D DP","M","maximum-length-of-repeated-subarray"],["Wiggle Subsequence","Greedy","M","wiggle-subsequence"],["Queue Reconstruction by Height","Greedy","M","queue-reconstruction-by-height"],["Minimum Number of Arrows to Burst Balloons","Intervals","M","minimum-number-of-arrows-to-burst-balloons"],["Data Stream as Disjoint Intervals","Intervals","H","data-stream-as-disjoint-intervals"],["Valid Number","Math & Geometry","H","valid-number"],["Integer to Roman","Math & Geometry","M","integer-to-roman"],["Sqrt(x)","Math & Geometry","E","sqrtx"],["Excel Sheet Column Number","Math & Geometry","E","excel-sheet-column-number"],["Reverse Linked List II","Linked List","M","reverse-linked-list-ii"],["Rotate List","Linked List","M","rotate-list"],["Binary Tree Inorder Traversal","Trees","E","binary-tree-inorder-traversal"],["Binary Tree Preorder Traversal","Trees","E","binary-tree-preorder-traversal"],["Binary Tree Postorder Traversal","Trees","E","binary-tree-postorder-traversal"],["Symmetric Tree","Trees","E","symmetric-tree"],["Minimum Depth of Binary Tree","Trees","E","minimum-depth-of-binary-tree"],["Course Schedule III","Advanced Graphs","H","course-schedule-iii"],["Fibonacci Number","1-D DP","E","fibonacci-number"],["Climbing Stairs with Cost","1-D DP","E","min-cost-climbing-stairs"],["Combination Sum IV","1-D DP","M","combination-sum-iv"],["House Robber IV","1-D DP","M","house-robber-iv"],["Minimum Falling Path Sum","2-D DP","M","minimum-falling-path-sum"],["Triangle Minimum Path","2-D DP","M","triangle"],["Jump Game VII","Greedy","M","jump-game-vii"],["Partition Array for Maximum Sum","Greedy","M","partition-array-for-maximum-sum"],["Interval Scheduling","Intervals","M","interval-scheduling"],["Number Complement","Bit Manipulation","E","number-complement"],["Reverse Bits II","Bit Manipulation","E","reverse-bits"]
+];
+const SETS={
+  blind75:{label:"Blind 75",description:"The classic interview essentials, sharpened one review at a time.",problems:P.filter(p=>BLIND75.has(p[3])).concat(EXTRA.slice(0,14))},
+  neetcode150:{label:"NeetCode 150",description:"The complete pattern-first roadmap, ready when you are.",problems:P},
+  neetcode250:{label:"NeetCode 250",description:"A deeper library of patterns for a more thorough interview prep cycle.",problems:P.concat(EXTRA,MORE.slice(0,60))}
+};
+
+const {useMemo,useState}=React;
+const STORAGE_KEY="neetcode_sr_v2";
+const loadState=(key)=>{const saved=localStorage.getItem(key);if(!saved)return {};try{return JSON.parse(saved)||{};}catch(error){console.error("Unable to read saved progress. Starting with an empty queue.",error);return {};}};
+const today=()=>new Date().setHours(0,0,0,0);const daysFromNow=n=>today()+n*86400000;const formatDate=ts=>new Date(ts).toLocaleDateString(undefined,{month:"short",day:"numeric"});
+function Badge({children,tone=""}){return <span className={`badge ${tone}`}>{children}</span>}
+function Button({children,className="",...props}){return <button className={`btn ${className}`} {...props}>{children}</button>}
+function App(){
+ const [activeSet,setActiveSet]=useState(()=>localStorage.getItem(STORAGE_KEY+"_set")||"neetcode150");
+ const [state,setState]=useState(()=>loadState(STORAGE_KEY+"_"+(localStorage.getItem(STORAGE_KEY+"_set")||"neetcode150")));
+ const [filter,setFilter]=useState("all");
+ const set=SETS[activeSet]; const problems=set.problems;
+ const save=(next)=>{setState(next);try{localStorage.setItem(STORAGE_KEY+"_"+activeSet,JSON.stringify(next));}catch(error){console.error("Unable to save progress to browser storage.",error);}};
+ const changeSet=(key)=>{if(!SETS[key])return;localStorage.setItem(STORAGE_KEY+"_set",key);setActiveSet(key);setState(loadState(STORAGE_KEY+"_"+key));setFilter("all");};
+ const getRecord=(i)=>state[i]||{status:"new",ef:2.3,interval:0,reps:0,due:null,last:null};
+ const grade=(i,g)=>{const r={...getRecord(i),last:today()};if(g===0){r.reps=0;r.interval=1;r.ef=Math.max(1.3,r.ef-.2);}else{r.reps=(r.reps||0)+1;if(g===1)r.ef=Math.max(1.3,r.ef-.15);if(g===3)r.ef+=.15;if(r.reps===1)r.interval=1;else if(r.reps===2)r.interval=3;else r.interval=Math.round(r.interval*r.ef*(g===1?.75:1));}r.due=daysFromNow(r.interval);r.status=r.interval>=21?"mastered":"review";save({...state,[i]:r});};
+ const markStarted=(i)=>{const r=getRecord(i);if(r.status!=="new")return;r.status="review";r.reps=0;r.ef=2.3;r.interval=1;r.due=daysFromNow(1);r.last=today();save({...state,[i]:r});};
+ const next=useMemo(()=>{const due=[];problems.forEach((p,i)=>{const r=state[i];if(r&&r.due!==null&&r.due<=today())due.push([i,r.due]);});if(due.length){due.sort((a,b)=>a[1]-b[1]);return {idx:due[0][0],type:"due"};}const idx=problems.findIndex((p,i)=>!state[i]);return idx===-1?null:{idx,type:"new"};},[problems,state]);
+ const categories=useMemo(()=>[...new Set(problems.map(p=>p[1]))],[problems]);
+ const doneCount=Object.values(state).filter(Boolean).length;const dueCount=problems.filter((p,i)=>state[i]?.due!==null&&state[i]?.due<=today()).length;const masteredCount=Object.values(state).filter(r=>r?.status==="mastered").length;const progress=problems.length?Math.round(doneCount/problems.length*100):0;
+ return <div className="app-shell"><header className="header"><div className="container header-inner"><div className="brand"><div className="logo">N</div><div><div className="brand-name">Pattern Recall</div><div className="brand-sub">Spaced repetition for coding interviews</div></div></div><div className="private-note"><span className="status-dot"/> Stored locally · private by default</div></div></header><main className="container main"><section className="hero"><div><p className="eyebrow">Your practice queue</p><h1>Build recall that holds under pressure.</h1><p className="hero-copy">Work through the roadmap in order, then revisit the patterns that need more reps. One focused recommendation at a time.</p></div><div className="select-group"><label className="label" htmlFor="practice-set">Practice set</label><select id="practice-set" className="select" value={activeSet} onChange={e=>changeSet(e.target.value)}>{Object.entries(SETS).map(([key,value])=><option key={key} value={key}>{value.label}</option>)}</select></div></section><section className="stats"><div className="card stat"><span className="stat-value">{doneCount}<small>/{problems.length}</small></span><span className="stat-label">Attempted</span><div className="progress"><div className="progress-bar" style={{width:`${progress}%`}}/></div></div><div className="card stat"><span className="stat-value">{dueCount}</span><span className="stat-label">Due today</span></div><div className="card stat"><span className="stat-value">{masteredCount}</span><span className="stat-label">Mastered</span></div><div className="card stat"><span className="stat-value">{Math.max(problems.length-doneCount,0)}</span><span className="stat-label">Remaining</span></div></section><section className="card next-card">{next?<><p className="next-heading">Next up · {next.type==="due"?"Review":"New problem"}</p><div className="badges"><Badge tone={next.type==="due"?"due":"primary"}>{next.type==="due"?"Review":"New"}</Badge><Badge>{problems[next.idx][1]}</Badge><Badge>{problems[next.idx][2]}</Badge></div><h2 className="next-title">{problems[next.idx][0]}</h2><p className="next-meta">{next.type==="due"?"How did it go this time?":"Start a focused attempt, then schedule your first review."}</p><div className="actions"><a className="btn btn-primary" target="_blank" rel="noreferrer" href={`https://leetcode.com/problems/${problems[next.idx][3]}/`}>Open on LeetCode ↗</a>{next.type==="new"&&<Button className="btn-secondary" onClick={()=>markStarted(next.idx)}>Mark as done → schedule review</Button>}</div>{next.type==="due"&&<div className="grade"><Button className="grade-again" onClick={()=>grade(next.idx,0)}>Blanked</Button><Button className="grade-hard" onClick={()=>grade(next.idx,1)}>Hard</Button><Button className="grade-good" onClick={()=>grade(next.idx,2)}>Good</Button><Button className="grade-easy" onClick={()=>grade(next.idx,3)}>Easy</Button></div>}</>:<><p className="next-heading">All caught up</p><h2 className="next-title">Your queue is clear.</h2><p className="next-meta">No new problems left and nothing due for review.</p></>}</section><div className="toolbar"><h2>Roadmap problems</h2><div className="filters">{["all",...categories].map(category=><button key={category} className={`filter ${filter===category?"active":""}`} onClick={()=>setFilter(category)}>{category==="all"?"All":category}</button>)}</div></div><section className="card list-card">{categories.filter(c=>filter==="all"||filter===c).map(category=>{const items=problems.map((p,i)=>({p,i})).filter(({p})=>p[1]===category);const finished=items.filter(({i})=>state[i]).length;return <div className="accordion" key={category}><button className="accordion-trigger" onClick={e=>{const content=e.currentTarget.nextElementSibling;content.hidden=!content.hidden}}>{category}<span>{finished}/{items.length} · ＋</span></button><div>{items.map(({p,i})=>{const r=state[i];let status="Not started",tone="new";if(r?.status==="mastered"){tone="mastered";status=`Mastered · next review ${formatDate(r.due)}`;}else if(r?.due<=today()){tone="due";status="Due for review";}else if(r){tone="review";status=`Reviewing · next ${formatDate(r.due)}`;}return <div className="problem" key={`${p[3]}-${i}`}><div className="problem-name"><span className={`dot ${tone}`}/><span>{p[0]}</span><span>{p[2]} · {status}</span></div><a className="problem-link" target="_blank" rel="noreferrer" href={`https://leetcode.com/problems/${p[3]}/`}>Solve ↗</a></div>})}</div></div>})}</section><section className="card info"><strong>How review timing works</strong>: each completed problem enters a simplified SM-2 review queue. Your first review is tomorrow, then after three days, with longer intervals for strong recall. “Blanked” resets the interval; “Hard”, “Good”, and “Easy” adjust the next gap. Progress stays in this browser and never leaves your device.</section></main><footer className="footer">Pattern Recall · Links open directly on LeetCode</footer></div>;
 }
-function markStarted(i){
-  let r=getRec(i);
-  if(r.status==="new"){r.status="review";r.reps=0;r.ef=2.3;r.interval=1;r.due=daysFromNow(1);r.last=today();state[i]=r;save();}
-  render();
-}
-function nextIndex(){
-  let due=[];
-  P.forEach((p,i)=>{let r=state[i];if(r&&r.due!==null&&r.due<=today())due.push([i,r.due]);});
-  if(due.length){due.sort((a,b)=>a[1]-b[1]);return {idx:due[0][0],type:"due"};}
-  let firstNew=P.findIndex((p,i)=>!state[i]);
-  if(firstNew!==-1)return {idx:firstNew,type:"new"};
-  return null;
-}
-let filter="all";
-function render(){
-  let doneCount=Object.values(state).filter(r=>r).length;
-  let dueCount=P.filter((p,i)=>state[i]&&state[i].due!==null&&state[i].due<=today()).length;
-  let masteredCount=Object.values(state).filter(r=>r&&r.status==="mastered").length;
-  document.getElementById("stats").innerHTML=`
-    <div class="stat"><b>${doneCount}/${P.length}</b><span>Attempted</span></div>
-    <div class="stat"><b>${dueCount}</b><span>Due now</span></div>
-    <div class="stat"><b>${masteredCount}</b><span>Mastered</span></div>`;
-  let nx=nextIndex();
-  let nu=document.getElementById("nextup");
-  if(!nx){nu.innerHTML="<h2>All caught up 🎉</h2><div class='sub'>No new problems left and nothing due for review.</div>";}
-  else{
-    let p=P[nx.idx];
-    let isDue=nx.type==="due";
-    nu.innerHTML=`<h2>Next up</h2>
-      <span class="badge ${isDue?'review':''}">${isDue?'Review':'New'}</span>
-      <span class="badge">${p[1]}</span><span class="badge">${p[2]}</span>
-      <div class="name">${p[0]}</div>
-      <div class="actions">
-        <a class="btn-link" target="_blank" href="https://leetcode.com/problems/${p[3]}/">Open on LeetCode ↗</a>
-        ${!isDue?`<button class="btn-primary" onclick="markStarted(${nx.idx})">Mark as done → schedule review</button>`:""}
-      </div>
-      ${isDue?`<div class="sub" style="margin-top:8px">How'd it go this time?</div>
-      <div class="grade">
-        <button class="g0" onclick="grade(${nx.idx},0)">Blanked</button>
-        <button class="g1" onclick="grade(${nx.idx},1)">Hard</button>
-        <button class="g2" onclick="grade(${nx.idx},2)">Good</button>
-        <button class="g3" onclick="grade(${nx.idx},3)">Easy</button>
-      </div>`:""}
-    `;
-  }
-  let cats=[...new Set(P.map(p=>p[1]))];
-  document.getElementById("filterbar").innerHTML=["all",...cats].map(c=>
-    `<button class="${filter===c?'active':''}" onclick="setFilter('${c.replace(/'/g,"\\'")}')">${c==='all'?'All':c}</button>`).join("");
-  let list=document.getElementById("list");
-  list.innerHTML=cats.filter(c=>filter==="all"||filter===c).map(cat=>{
-    let items=P.map((p,i)=>({p,i})).filter(o=>o.p[1]===cat);
-    let doneInCat=items.filter(o=>state[o.i]).length;
-    let rows=items.map(({p,i})=>{
-      let r=state[i];
-      let cls="d-new",label="Not started";
-      if(r){
-        if(r.status==="mastered"){cls="d-mastered";label="Mastered · next review "+fmt(r.due);}
-        else if(r.due<=today()){cls="d-due";label="Due for review";}
-        else{cls="d-review";label="Reviewing · next "+fmt(r.due);}
-      }
-      return `<div class="prob"><div class="pname"><span class="dot ${cls}"></span>${p[0]} <span class="diff">${p[2]} · ${label}</span></div>
-        <a target="_blank" href="https://leetcode.com/problems/${p[3]}/">Solve ↗</a></div>`;
-    }).join("");
-    return `<details ${filter===cat?"open":""}><summary>${cat} (${doneInCat}/${items.length})</summary>${rows}</details>`;
-  }).join("");
-}
-function fmt(ts){let d=new Date(ts);return d.toLocaleDateString(undefined,{month:'short',day:'numeric'});}
-function setFilter(c){filter=c;render();}
-render();
-</script>
-</body>
-</html>
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script></body></html>
