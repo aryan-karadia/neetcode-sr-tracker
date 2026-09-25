@@ -28,15 +28,13 @@ npm test
 ## CI/CD And Netlify
 
 The GitHub Actions workflow in `.github/workflows/ci-cd.yml` installs dependencies with
-`npm ci`, runs the Vitest test suite, builds the application, and uploads the generated
-`dist` directory as the `netlify-dist` artifact. Pull requests targeting `main` run the
-test and build checks. A push to `main` downloads that same artifact and deploys it to
-Netlify, so deployment cannot bypass the tested build.
+`npm ci`, runs the Vitest test suite, and builds the application. Pull requests targeting
+`main` and pushes to `main` run these test and build checks.
 
-To enable deployment, add these repository secrets in GitHub:
-
-- `NETLIFY_AUTH_TOKEN` — a Netlify personal access token.
-- `NETLIFY_SITE_ID` — the Netlify site ID for this application.
+Netlify deployment is managed by Netlify's Git integration: configure the site to use
+this repository, deploy the `main` branch, use `npm run build` as the build command, and
+publish the `dist` directory. Each push to `main` then triggers Netlify's automatic
+production deployment without requiring GitHub deployment secrets or a manual CLI step.
 
 ## How It Works
 
