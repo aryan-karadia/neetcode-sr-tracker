@@ -63,31 +63,33 @@ export default function NextProblemCard({
           </div>
           {next.type === 'due' && (
             <Fragment>
-              {completedIdx !== next.idx && (
-                <div className="grade">
-                  <Button className="grade-again" onClick={() => onGrade(problem, 0)}>
-                    Blanked
-                  </Button>
-                  <Button className="grade-hard" onClick={() => onGrade(problem, 1)}>
-                    Hard
-                  </Button>
-                  <Button className="grade-good" onClick={() => onGrade(problem, 2)}>
-                    Good
-                  </Button>
-                  <Button
-                    className="grade-easy"
-                    onClick={() => {
-                      onGrade(problem, 3);
-                      onNotify('Marked as completed');
-                    }}
-                  >
-                    Easy
-                  </Button>
-                </div>
-              )}
-              <Button className="btn-success" onClick={onMoveNext}>
-                Move to next problem →
-              </Button>
+              <div className="review-actions">
+                {completedIdx !== next.idx && (
+                  <div className="grade">
+                    <Button className="grade-again" onClick={() => onGrade(problem, 0)}>
+                      Blanked
+                    </Button>
+                    <Button className="grade-hard" onClick={() => onGrade(problem, 1)}>
+                      Hard
+                    </Button>
+                    <Button className="grade-good" onClick={() => onGrade(problem, 2)}>
+                      Good
+                    </Button>
+                    <Button
+                      className="grade-easy"
+                      onClick={() => {
+                        onGrade(problem, 3);
+                        onNotify('Marked as completed');
+                      }}
+                    >
+                      Easy
+                    </Button>
+                  </div>
+                )}
+                <Button className="btn-success" onClick={onMoveNext}>
+                  Move to next problem →
+                </Button>
+              </div>
             </Fragment>
           )}
         </>
