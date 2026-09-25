@@ -1,5 +1,8 @@
 # Pattern Recall · Coding Interview Tracker
 
+[![Netlify Status](https://api.netlify.com/api/v1/badges/5c331a5b-5c40-4fc4-abef-fd7814f5b207/deploy-status)](https://app.netlify.com/projects/neetcodesr/deploys)
+[https://neetcodesr.netlify.app/](https://neetcodesr.netlify.app/)
+
 A Vite-powered React web app for practicing the [Blind 75](https://neetcode.io/practice), [NeetCode 150](https://neetcode.io/practice), or NeetCode 250 roadmap in roadmap order. It combines a focused daily queue with spaced repetition so algorithmic patterns become easier to recall under interview pressure.
 
 ## Development
