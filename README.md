@@ -12,7 +12,7 @@ A single-file React web app for practicing the [Blind 75](https://neetcode.io/pr
 - **NeetCode solution links** appear beside every completed problem for quick review.
 - **Uncomplete controls** let you return a completed problem to the not-started queue from the roadmap list.
 - NeetCode 150 entries store their canonical NeetCode solution slug separately from the LeetCode slug, so renamed routes such as `duplicate-integer` and `is-anagram` resolve correctly.
-- **Scheduling** uses a simplified SM-2 algorithm. Initial reviews are scheduled after 1 day and 3 days, then intervals grow according to an ease factor. A failed review resets the interval to 1 day.
+- **Scheduling** uses a simplified SM-2 algorithm. Initial reviews are scheduled after 1 day and 3 days, then intervals grow according to an ease factor. A failed review resets the interval to 1 day. When the saved schedule is overdue, the app shifts all repetition dates forward by the same amount so its oldest repetition date is today; review history remains unchanged.
 
 ## Roadmap Coverage
 
