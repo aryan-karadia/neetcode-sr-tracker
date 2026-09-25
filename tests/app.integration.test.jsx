@@ -28,6 +28,7 @@ describe('Pattern Recall application flows', () => {
     await user.click(screen.getByRole('button', { name: /mark completed/i }));
 
     expect(screen.getByRole('status')).toHaveTextContent('Marked as completed');
+    expect(screen.queryByRole('button', { name: 'Blanked' })).not.toBeInTheDocument();
     expect(storedProgress()['contains-duplicate']).toMatchObject({
       status: 'review',
       reps: 0,
