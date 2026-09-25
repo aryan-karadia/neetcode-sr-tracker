@@ -1,6 +1,23 @@
 # Pattern Recall · Coding Interview Tracker
 
-A single-file React web app for practicing the [Blind 75](https://neetcode.io/practice), [NeetCode 150](https://neetcode.io/practice), or NeetCode 250 roadmap in roadmap order. It combines a focused daily queue with spaced repetition so algorithmic patterns become easier to recall under interview pressure.
+A Vite-powered React web app for practicing the [Blind 75](https://neetcode.io/practice), [NeetCode 150](https://neetcode.io/practice), or NeetCode 250 roadmap in roadmap order. It combines a focused daily queue with spaced repetition so algorithmic patterns become easier to recall under interview pressure.
+
+## Development
+
+Install dependencies and start the Vite development server:
+
+```sh
+npm install
+npm run dev
+```
+
+The project includes Tailwind CSS and the standard shadcn/ui configuration. New shadcn components can be added with the shadcn CLI and will use the `@/components/ui` and `@/lib` aliases.
+
+Create a production build with:
+
+```sh
+npm run build
+```
 
 ## How It Works
 
