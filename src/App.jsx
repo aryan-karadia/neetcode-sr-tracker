@@ -224,7 +224,13 @@ function App() {
   const current =
     focusedIdx === null || !problems[focusedIdx]
       ? queueNext
-      : { idx: focusedIdx, type: state[progressKey(problems[focusedIdx])] ? 'due' : 'new' };
+      : {
+          idx: focusedIdx,
+          type:
+            completedIdx === focusedIdx || !state[progressKey(problems[focusedIdx])]
+              ? 'new'
+              : 'due',
+        };
 
   const moveNext = () => {
     const start = current ? current.idx + 1 : 0;
